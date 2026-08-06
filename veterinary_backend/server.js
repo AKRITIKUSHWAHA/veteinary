@@ -52,6 +52,7 @@ const reportRoutes = require('./routes/reportRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 const assistanceTaskRoutes = require('./routes/assistanceTaskRoutes');
+const superAdminRoutes = require('./routes/superAdminRoutes');
 
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/v1/auth', authLimiter, authRoutes);
@@ -69,6 +70,7 @@ app.use('/api/v1/reports', reportRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/settings', settingsRoutes);
 app.use('/api/v1/assistance-tasks', assistanceTaskRoutes);
+app.use('/api/super-admin', superAdminRoutes);
 
 // Basic Route to check if server is running
 app.get('/', (req, res) => {
