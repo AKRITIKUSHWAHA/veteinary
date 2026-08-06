@@ -2,26 +2,10 @@ import React from 'react';
 import { 
   LayoutDashboard, CalendarDays, Users, Dog, FileHeart,
   CreditCard, Package, BarChart3, Settings, LogOut,
-  UserCog, Bell, Pill, Microscope, ClipboardPen, Clock, ClipboardList, Mail
+  UserCog, Bell, Pill, Microscope, ClipboardPen, Clock, ClipboardList, Mail,
+  ChevronRight, ChevronLeft, Map, CheckCircle2, UserCircle, Car
 } from 'lucide-react';
-
-/* ── Beautiful Paw SVG Logo ── */
-function PawIcon({ size = 36 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* Main pad */}
-      <ellipse cx="32" cy="42" rx="14" ry="11" fill="#14b8a6" opacity="0.9"/>
-      {/* Top left toe */}
-      <ellipse cx="14" cy="26" rx="6" ry="8" transform="rotate(-20 14 26)" fill="#14b8a6" opacity="0.75"/>
-      {/* Top centre-left toe */}
-      <ellipse cx="25" cy="20" rx="5.5" ry="7.5" transform="rotate(-5 25 20)" fill="#14b8a6" opacity="0.75"/>
-      {/* Top centre-right toe */}
-      <ellipse cx="39" cy="20" rx="5.5" ry="7.5" transform="rotate(5 39 20)" fill="#14b8a6" opacity="0.75"/>
-      {/* Top right toe */}
-      <ellipse cx="50" cy="26" rx="6" ry="8" transform="rotate(20 50 26)" fill="#14b8a6" opacity="0.75"/>
-    </svg>
-  );
-}
+import './Sidebar.css';
 
 export default function Sidebar({ 
   currentTab, setCurrentTab,
@@ -33,12 +17,12 @@ export default function Sidebar({
   const menuItems = [
     { id: 'dashboard',    label: 'Dashboard',             icon: LayoutDashboard, roles: ['Admin','Manager','Doctor','Receptionist','Vet Assistant'] },
     { id: 'appointments', label: currentRole === 'Doctor' || currentRole === 'Vet Assistant' ? 'My Appointments' : 'Appointments', icon: CalendarDays, roles: ['Admin','Manager','Doctor','Receptionist', 'Vet Assistant'] },
-    { id: 'home-visits',  label: currentRole === 'Doctor' ? 'Home Visits' : 'Home Visit Appointments', icon: CalendarDays,  roles: ['Admin','Manager','Receptionist','Doctor', 'Vet Assistant'] },
+    { id: 'home-visits',  label: currentRole === 'Doctor' ? 'Home Visits' : 'Home Visit Appointments', icon: Map,  roles: ['Admin','Manager','Receptionist','Doctor', 'Vet Assistant'] },
     { id: 'owners',       label: 'Pet Owners',            icon: Users,           roles: ['Admin','Manager','Receptionist'] },
     { id: 'pets',         label: currentRole === 'Doctor' || currentRole === 'Vet Assistant' ? 'Patients' : 'Pets', icon: Dog, roles: ['Admin','Manager','Doctor','Receptionist', 'Vet Assistant'] },
     { id: 'medical',      label: 'Medical Records',       icon: FileHeart,       roles: ['Admin','Manager','Doctor','Vet Assistant'] },
     { id: 'treatment',    label: 'Treatment Notes',       icon: ClipboardPen,    roles: ['Doctor'] },
-    { id: 'assistance-tasks', label: 'Assistance Tasks',  icon: ClipboardList,   roles: ['Vet Assistant'] },
+    { id: 'assistance-tasks', label: 'Assistance Tasks',  icon: CheckCircle2,    roles: ['Vet Assistant'] },
     { id: 'prescriptions',label: 'Prescriptions',         icon: Pill,            roles: ['Doctor'] },
     { id: 'my-revenue',   label: 'My Revenue',            icon: BarChart3,       roles: ['Doctor'] },
     { id: 'billing',      label: 'Billing & POS',         icon: CreditCard,      roles: ['Admin','Manager','Receptionist','Doctor'] },
@@ -63,9 +47,32 @@ export default function Sidebar({
 
   const isActive = (id) => currentTab === id || (id === 'medical' && (currentTab === 'reports-uploads' || currentTab === 'prescriptions'));
 
+  // Custom multi-color logic based on item id to mimic the screenshot
+  const getIconColor = (id, active) => {
+    if (active) return '#2dd4bf'; // Active is always teal
+    
+    // Assign some colorful defaults mimicking the screenshot
+    const colors = {
+      'dashboard': '#f59e0b',
+      'appointments': '#3b82f6',
+      'home-visits': '#ef4444',
+      'owners': '#a855f7',
+      'pets': '#ec4899',
+      'medical': '#ef4444',
+      'treatment': '#f59e0b',
+      'assistance-tasks': '#10b981',
+      'prescriptions': '#3b82f6',
+      'billing': '#8b5cf6',
+      'inventory': '#ef4444',
+      'staff': '#a855f7',
+      'reports': '#10b981',
+      'settings': '#94a3b8'
+    };
+    return colors[id] || '#94a3b8';
+  };
+
   return (
     <>
-      {/* ── Mobile overlay backdrop (Hidden on Desktop) ── */}
       {sidebarOpen && (
         <div
           className="sidebar-overlay"
@@ -73,139 +80,103 @@ export default function Sidebar({
         />
       )}
 
-      <aside style={{
-        width: sidebarOpen ? 'var(--sidebar-width)' : '75px',
-        backgroundColor: '#ffffff',
-        borderRight: '1px solid var(--border)',
-        height: '100vh', position: 'fixed',
-        top: 0, left: 0, zIndex: 1000,
-        display: 'flex', flexDirection: 'column',
-        transition: 'width 0.3s ease, transform 0.3s ease',
-        overflowX: 'hidden'
-      }} className="sidebar">
+      <aside 
+        className="sidebar-premium"
+        style={{ width: sidebarOpen ? '280px' : '80px' }}
+      >
+        <div className="sidebar-brand-container">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', overflow: 'hidden' }}>
+            {/* KT Image Logo */}
+            <img 
+              src="/kt-logo.png" 
+              alt="KT Logo" 
+              style={{
+                width: '40px',
+                height: 'auto',
+                flexShrink: 0,
+                objectFit: 'contain'
+              }}
+            />
 
-        {/* ── Brand Header ── */}
-        <div style={{
-          height: 'var(--navbar-height)',
-          display: 'flex', alignItems: 'center',
-          justifyContent: sidebarOpen ? 'flex-start' : 'center',
-          padding: sidebarOpen ? '0 1.25rem' : '0',
-          borderBottom: '1px solid var(--border)',
-          overflow: 'hidden', gap: '0.75rem'
-        }}>
-          {/* Logo icon — always visible */}
-          <div style={{
-            width: '42px', height: '42px', borderRadius: 'var(--radius-lg)',
-            backgroundColor: 'var(--primary-teal-light)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0
-          }}>
-            <PawIcon size={30} />
+            {sidebarOpen && (
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontSize: '1.05rem', fontWeight: 600, color: '#f8fafc', whiteSpace: 'nowrap' }}>
+                  VetCare <span style={{ color: '#2dd4bf' }}>Pro</span>
+                </span>
+                <span style={{ fontSize: '0.65rem', color: '#64748b', whiteSpace: 'nowrap' }}>
+                  Clinic Management System
+                </span>
+              </div>
+            )}
           </div>
 
-          {/* Brand name — only when expanded */}
-          {sidebarOpen && (
-            <span style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>
-              VetCare <span style={{ color: 'var(--primary-teal)' }}>Pro</span>
-            </span>
-          )}
+          <button 
+            className="sidebar-collapse-btn"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+          >
+            {sidebarOpen ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
+          </button>
         </div>
 
-        {/* ── Navigation Menu ── */}
-        <nav style={{ flex: 1, padding: '1rem 0.75rem', display: 'flex', flexDirection: 'column', gap: '0.2rem', overflowY: 'auto' }}>
+        <nav className="sidebar-nav-menu">
           {filteredItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.id);
             return (
-              <button key={item.id}
+              <button 
+                key={item.id}
+                className={`sidebar-menu-btn ${active ? 'active' : ''}`}
                 onClick={() => { setCurrentTab(item.id); if (window.innerWidth < 1024) setSidebarOpen(false); }}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '0.75rem',
-                  padding: '0.7rem 1rem',
-                  borderRadius: 'var(--radius-lg)', border: 'none',
-                  backgroundColor: active ? 'var(--primary-teal)' : 'transparent',
-                  color: active ? '#ffffff' : 'var(--text-secondary)',
-                  cursor: 'pointer', transition: 'all 0.2s ease',
-                  width: '100%', textAlign: 'left',
-                  justifyContent: sidebarOpen ? 'flex-start' : 'center',
-                  fontWeight: active ? 600 : 400
-                }}
                 title={item.label}
               >
-                <Icon size={20} style={{ flexShrink: 0 }} />
-                {sidebarOpen && <span className="text-sm">{item.label}</span>}
+                <div className="sidebar-menu-icon" style={{ color: getIconColor(item.id, active) }}>
+                  <Icon size={20} />
+                </div>
+                {sidebarOpen && (
+                  <>
+                    <span className="sidebar-menu-label">{item.label}</span>
+                    <ChevronRight size={16} className="chevron" />
+                  </>
+                )}
               </button>
             );
           })}
 
-          {/* ── Notifications ── */}
-          <button onClick={() => { setCurrentTab('notifications'); if (window.innerWidth < 1024) setSidebarOpen(false); }}
-            style={{
-              display: 'flex', alignItems: 'center', gap: '0.75rem',
-              padding: '0.7rem 1rem',
-              borderRadius: 'var(--radius-lg)', border: 'none',
-              backgroundColor: isActive('notifications') ? 'var(--primary-teal)' : 'transparent',
-              color: isActive('notifications') ? '#ffffff' : 'var(--text-secondary)',
-              cursor: 'pointer', transition: 'all 0.2s ease',
-              width: '100%', textAlign: 'left',
-              justifyContent: sidebarOpen ? 'flex-start' : 'center',
-              fontWeight: isActive('notifications') ? 600 : 400,
-              position: 'relative'
-            }}
+          <button 
+            className={`sidebar-menu-btn ${isActive('notifications') ? 'active' : ''}`}
+            onClick={() => { setCurrentTab('notifications'); if (window.innerWidth < 1024) setSidebarOpen(false); }}
             title="Notifications"
           >
-            <div style={{ position: 'relative', flexShrink: 0 }}>
+            <div className="sidebar-menu-icon" style={{ position: 'relative', color: getIconColor('notifications', isActive('notifications')) }}>
               <Bell size={20} />
               {unreadCount > 0 && (
-                <span style={{
-                  position: 'absolute', top: '-6px', right: '-6px',
-                  backgroundColor: 'var(--danger)', color: '#fff',
-                  fontSize: '0.6rem', fontWeight: 700,
-                  width: '16px', height: '16px', borderRadius: '50%',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  border: '2px solid #fff'
-                }}>{unreadCount}</span>
+                <span className="notification-badge">{unreadCount}</span>
               )}
             </div>
-            {sidebarOpen && <span className="text-sm">Notifications</span>}
+            {sidebarOpen && (
+              <>
+                <span className="sidebar-menu-label">Notifications</span>
+                <ChevronRight size={16} className="chevron" />
+              </>
+            )}
           </button>
         </nav>
 
-        {/* ── Footer ── */}
-        <div style={{
-          padding: '1rem', borderTop: '1px solid var(--border)',
-          backgroundColor: '#fafafa',
-          display: 'flex', flexDirection: 'column',
-          alignItems: sidebarOpen ? 'flex-start' : 'center', gap: '0.75rem'
-        }}>
-          {sidebarOpen ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%' }}>
-              <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '600', fontSize: '0.875rem', color: '#334155', flexShrink: 0 }}>
-                {currentRole[0]}
+        <div className="sidebar-footer">
+          <div className="sidebar-user-avatar">
+            <UserCircle size={24} color="#94a3b8" />
+            <div className="online-dot"></div>
+          </div>
+          {sidebarOpen && (
+            <>
+              <div className="sidebar-user-info">
+                <div className="sidebar-user-name">{staffName}</div>
+                <div className="sidebar-user-role">{currentRole}</div>
               </div>
-              <div style={{ overflow: 'hidden', flex: 1 }}>
-                <p className="text-xs font-bold" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{staffName}</p>
-                <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{currentRole}</p>
-              </div>
-              <button onClick={onLogout}
-                style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#94a3b8', padding: '0.25rem', borderRadius: '4px', transition: 'color 0.2s', flexShrink: 0 }}
-                title="Logout"
-                onMouseEnter={e => e.currentTarget.style.color = 'var(--danger)'}
-                onMouseLeave={e => e.currentTarget.style.color = '#94a3b8'}
-              >
+              <button onClick={onLogout} className="logout-btn">
                 <LogOut size={16} />
               </button>
-            </div>
-          ) : (
-            /* Collapsed: just show logout icon */
-            <button onClick={onLogout}
-              style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#94a3b8', padding: '0.5rem', borderRadius: '4px', transition: 'color 0.2s' }}
-              title="Logout"
-              onMouseEnter={e => e.currentTarget.style.color = 'var(--danger)'}
-              onMouseLeave={e => e.currentTarget.style.color = '#94a3b8'}
-            >
-              <LogOut size={16} />
-            </button>
+            </>
           )}
         </div>
       </aside>

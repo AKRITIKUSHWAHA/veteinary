@@ -25,6 +25,8 @@ import Notifications from './components/Notifications';
 import TreatmentNotes from './components/TreatmentNotes';
 import DoctorRevenue from './components/DoctorRevenue';
 import ReminderQueue from './components/ReminderQueue';
+import SuperAdminLogin from './components/SuperAdmin/SuperAdminLogin';
+import SuperAdminLayout from './components/SuperAdmin/SuperAdminLayout';
 import { tabFromPath, pathForTab, isLegacyPath } from './utils/routes';
 import { Toaster } from 'react-hot-toast';
 
@@ -58,6 +60,7 @@ export default function App() {
 
   const [isAuthenticated, setIsAuthenticated] = useState(() => checkAuth());
   const [currentRole, setCurrentRole] = useState(() => localStorage.getItem('role') || '');
+  const [isSuperAdmin, setIsSuperAdmin] = useState(() => !!localStorage.getItem('sa_token'));
   // Sidebar: open by default on desktop only
   const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth >= 1024);
   const [selectedPetId, setSelectedPetId] = useState(null);
@@ -166,6 +169,23 @@ export default function App() {
     setSelectedPetId(petId);
     setCurrentTab('medical');
   };
+
+  if (location.pathname.startsWith('/super-admin')) {
+    if (!isSuperAdmin) {
+      if (location.pathname === '/super-admin/login') {
+        return <SuperAdminLogin setIsSuperAdmin={setIsSuperAdmin} />;
+      }
+      setTimeout(() => navigate('/super-admin/login', { replace: true }), 0);
+      return null;
+    }
+    
+    if (location.pathname === '/super-admin/login') {
+      setTimeout(() => navigate('/super-admin/dashboard', { replace: true }), 0);
+      return null;
+    }
+
+    return <SuperAdminLayout setIsSuperAdmin={setIsSuperAdmin} />;
+  }
 
   if (!isAuthenticated) {
     if (location.pathname === LOGIN_PATH) {

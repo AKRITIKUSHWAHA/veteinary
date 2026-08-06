@@ -1,18 +1,51 @@
-import { apiFetch } from '../utils/api';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { pathForTab } from '../utils/routes';
-import { Mail, Lock, ArrowRight, ShieldCheck, Stethoscope, Users, HeartHandshake, Shield, Briefcase, Eye, EyeOff } from 'lucide-react';
+import { apiFetch } from '../utils/api';
+import './Login.css';
+import { 
+  Mail, Lock, ArrowRight, ShieldCheck, Stethoscope, Users, 
+  HeartHandshake, Briefcase, Eye, EyeOff, CalendarCheck, 
+  FileText, CreditCard, Box, PieChart, Shield, CheckCircle, ArrowLeft
+} from 'lucide-react';
 
 export default function Login({ setIsAuthenticated, setCurrentRole }) {
   const navigate = useNavigate();
   const [email, setEmail] = useState('admin@vetcarepro.com');
   const [password, setPassword] = useState('password123');
   const [activeRole, setActiveRole] = useState('Admin');
-  const [btnHover, setBtnHover] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [capsLockActive, setCapsLockActive] = useState(false);
+  const [transitionOut, setTransitionOut] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  // Particles for the background
+  const [particles, setParticles] = useState([]);
+  
+  useEffect(() => {
+    // Generate random particles
+    const newParticles = Array.from({ length: 15 }).map((_, i) => ({
+      id: i,
+      size: Math.random() * 20 + 10,
+      left: Math.random() * 100,
+      top: Math.random() * 100,
+      duration: Math.random() * 20 + 10,
+      delay: Math.random() * 5
+    }));
+    setParticles(newParticles);
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.getModifierState) {
+        setCapsLockActive(e.getModifierState('CapsLock'));
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -21,7 +54,7 @@ export default function Login({ setIsAuthenticated, setCurrentRole }) {
 
     if (email && password) {
       try {
-        const response = await apiFetch('http://localhost:5000/api/auth/login', {
+        const response = await apiFetch('/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password })
@@ -31,206 +64,233 @@ export default function Login({ setIsAuthenticated, setCurrentRole }) {
         if (data.status === 'success') {
           const { token, user } = data.data;
           
-          // Securely store token and user session data
           localStorage.setItem('token', token);
           localStorage.setItem('role', user.role);
           localStorage.setItem('user', JSON.stringify(user));
           
-          setIsAuthenticated(true);
-          if (setCurrentRole) setCurrentRole(user.role);
-          navigate(pathForTab('dashboard', user.role), { replace: true });
+          setSuccess(true);
+          setLoading(false);
+          setTransitionOut(true);
+
+          // Wait for transition before navigating
+          setTimeout(() => {
+            setIsAuthenticated(true);
+            if (setCurrentRole) setCurrentRole(user.role);
+            navigate(pathForTab('dashboard', user.role), { replace: true });
+          }, 1000);
         } else {
           setError(data.message || 'Login failed. Please check your credentials.');
+          setLoading(false);
         }
       } catch (err) {
         console.error('Login Error:', err);
         setError('Unable to connect to server. Ensure backend is running.');
-      } finally {
         setLoading(false);
       }
     }
   };
 
+  const demoUsers = [
+    { role: 'Admin',        email: 'admin@vetcarepro.com',       icon: Shield },
+    { role: 'Manager',      email: 'manager@vetcarepro.com',     icon: Briefcase },
+    { role: 'Doctor',       email: 'demodoctor@gmail.com',       icon: Stethoscope },
+    { role: 'Receptionist', email: 'demoR@gmail.com',            icon: Users },
+    { role: 'Vet Assistant',email: 'assistant@vetcarepro.com',   icon: HeartHandshake },
+  ];
+
   const selectDemoUser = (role, demoEmail) => {
     setActiveRole(role);
     setEmail(demoEmail);
     setPassword('password123');
+    setError('');
   };
 
-  const demoUsers = [
-    { role: 'Admin',        email: 'admin@vetcarepro.com',       icon: Shield,        color: '#14b8a6', bg: '#f0fdfa', border: '#14b8a6' },
-    { role: 'Manager',      email: 'manager@vetcarepro.com',     icon: Briefcase,     color: '#6366f1', bg: '#e0e7ff', border: '#6366f1' },
-    { role: 'Doctor',       email: 'demodoctor@gmail.com',       icon: Stethoscope,   color: '#3b82f6', bg: '#eff6ff', border: '#3b82f6' },
-    { role: 'Receptionist', email: 'demoR@gmail.com',            icon: Users,         color: '#d946ef', bg: '#fdf4ff', border: '#d946ef' },
-    { role: 'Vet Assistant',email: 'assistant@vetcarepro.com',   icon: HeartHandshake,color: '#f59e0b', bg: '#fffbeb', border: '#f59e0b' },
-  ];
-
   return (
-    <div className="login-page">
-      <div className="login-bg" aria-hidden="true" />
-      <div className="login-overlay" aria-hidden="true" />
+    <div className={`login-premium-page ${transitionOut ? 'page-transition-out' : ''}`}>
+      {/* Background Container */}
+      <div className="login-bg-container">
+        <div className="login-bg-image"></div>
+        <div className="login-overlay-grad"></div>
+        <div className="login-particles">
+          {particles.map(p => (
+            <div 
+              key={p.id} 
+              className="particle"
+              style={{
+                width: p.size,
+                height: p.size,
+                left: `${p.left}%`,
+                top: `${p.top}%`,
+                animationDuration: `${p.duration}s`,
+                animationDelay: `${p.delay}s`
+              }}
+            >
+              <HeartHandshake size={p.size} strokeWidth={1} />
+            </div>
+          ))}
+        </div>
+      </div>
 
-      {/* Mobile / tablet compact brand bar */}
-      <header className="login-mobile-brand animate-fade-in">
-        <img src="/kt-logo.png" alt="Kiaan Technology Logo" style={{ height: '36px', objectFit: 'contain' }} />
-        <span className="login-brand-text">
-          VetCare <span className="login-brand-accent">Pro</span>
-        </span>
-      </header>
-
-      <div className="login-layout">
-        {/* LEFT: marketing content (desktop / large laptop) */}
-        <div className="login-left animate-fade-in-left">
-          <div className="login-left-brand animate-fade-in-left animate-delay-100">
-            <img src="/kt-logo.png" alt="Kiaan Technology Logo" style={{ height: '48px', objectFit: 'contain' }} />
-            <span className="login-brand-text login-brand-text--lg">
-              VetCare <span className="login-brand-accent">Pro</span>
+      <div className="login-premium-layout">
+        {/* Left Hero Side */}
+        <div className="login-hero-side">
+          <div className="login-brand-premium">
+            <img src="/kt-logo.png" alt="Logo" className="login-brand-logo" />
+            <span style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em' }}>
+              VetCare <span className="text-gradient">Pro</span>
             </span>
           </div>
 
-          <div className="login-hero animate-fade-in-left animate-delay-200">
-            <h1 className="login-hero-title">
-              Next-Gen<br />Veterinary Care.
-            </h1>
-            <p className="login-hero-desc">
-              Empowering your clinic with intuitive medical records, smart inventory, and seamless appointment management.
-            </p>
+          <div className="login-badge">
+            <ShieldCheck size={16} />
+            Veterinary Clinic Management Platform
           </div>
 
-          <div className="login-features animate-fade-in-left animate-delay-300">
-            {[
-              { icon: <Stethoscope size={20} />, title: 'Advanced Clinical Records',  sub: 'Detailed history, vaccines & prescriptions' },
-              { icon: <ShieldCheck   size={20} />, title: 'Secure Billing & ERP',      sub: 'Automated invoicing and live stock alerts'  },
-            ].map((f, i) => (
-              <div key={i} className="login-feature-item">
-                <div className="login-feature-icon">{f.icon}</div>
-                <div>
-                  <h4 className="login-feature-title">{f.title}</h4>
-                  <p className="login-feature-sub">{f.sub}</p>
-                </div>
-              </div>
-            ))}
+          <h1 className="login-title-premium">
+            Next Generation<br />
+            <span className="text-gradient">Veterinary Platform</span>
+          </h1>
+
+          <div className="login-feature-list">
+            <div className="login-feature-item">
+              <CalendarCheck className="login-feature-icon" size={24} />
+              <span>Smart Appointments</span>
+            </div>
+            <div className="login-feature-item">
+              <FileText className="login-feature-icon" size={24} />
+              <span>Medical Records</span>
+            </div>
+            <div className="login-feature-item">
+              <CreditCard className="login-feature-icon" size={24} />
+              <span>Billing & POS</span>
+            </div>
+            <div className="login-feature-item">
+              <Box className="login-feature-icon" size={24} />
+              <span>Inventory</span>
+            </div>
+            <div className="login-feature-item">
+              <PieChart className="login-feature-icon" size={24} />
+              <span>Reports</span>
+            </div>
+          </div>
+
+          <div className="floating-stats-container">
+            <div className="glass-stat-card c1">
+              <span className="stat-val">500+</span>
+              <span className="stat-lbl">Happy Clinics</span>
+            </div>
+            <div className="glass-stat-card c2">
+              <span className="stat-val">50K+</span>
+              <span className="stat-lbl">Pets Treated</span>
+            </div>
+            <div className="glass-stat-card c3">
+              <span className="stat-val">99.9%</span>
+              <span className="stat-lbl">Uptime</span>
+            </div>
           </div>
         </div>
 
-        {/* RIGHT: sign-in card */}
-        <div className="login-right">
-          <div className="login-card animate-fade-in-right animate-delay-150">
-            <div className="login-card-header">
-              <h2 className="login-card-title">Sign In to Portal</h2>
-              <p className="login-card-subtitle">Access the VetCare Pro Dashboard</p>
+        {/* Right Form Side */}
+        <div className="login-form-side">
+          <div className="glass-login-card">
+            
+            <button
+              type="button"
+              onClick={() => navigate('/')}
+              className="login-back-btn-premium"
+              aria-label="Back to Home"
+            >
+              <ArrowLeft size={16} />
+              Back to Home
+            </button>
+
+            <div className="login-header-text">
+              <h2>👋 Welcome Back<span className="cursor-blink"></span></h2>
+              <p>Sign in to your VetCare Pro Dashboard.</p>
+              
               {error && (
-                <div style={{ color: 'var(--danger)', backgroundColor: 'var(--danger-light)', padding: '0.75rem', borderRadius: '8px', fontSize: '0.85rem', marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Shield size={16}/> {error}
+                <div style={{ marginTop: '1rem', padding: '0.8rem', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '12px', color: '#fca5a5', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Shield size={16} /> {error}
                 </div>
               )}
             </div>
 
-            <form onSubmit={handleLogin} className="login-form">
-              <div className="login-field">
-                <label className="login-label">Email Address or Username</label>
-                <div className="login-input-wrap">
-                  <Mail size={17} className="login-input-icon" />
-                  <input
-                    type="text"
-                    className="login-input"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    autoComplete="email"
-                  />
-                </div>
-              </div>
-
-              <div className="login-field">
-                <div className="login-label-row">
-                  <label className="login-label">Password</label>
-                  <span className="login-forgot">Forgot?</span>
-                </div>
-                <div className="login-input-wrap" style={{ position: 'relative' }}>
-                  <Lock size={17} className="login-input-icon" />
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    className="login-input"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    autoComplete="current-password"
-                    style={{ paddingRight: '40px' }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    style={{
-                      position: 'absolute',
-                      right: '12px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      background: 'transparent',
-                      border: 'none',
-                      color: '#94a3b8',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      padding: '0'
-                    }}
-                    aria-label={showPassword ? "Hide password" : "Show password"}
-                  >
-                    {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
-                  </button>
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                className="login-submit"
-                disabled={loading}
-                onMouseEnter={() => setBtnHover(true)}
-                onMouseLeave={() => setBtnHover(false)}
-                style={{
-                  backgroundColor: btnHover ? '#0f766e' : '#14b8a6',
-                  boxShadow: btnHover ? '0 6px 20px rgba(20,184,166,0.45)' : '0 4px 12px rgba(20,184,166,0.3)',
-                  transform: btnHover ? 'translateY(-1px)' : 'translateY(0)',
-                  opacity: loading ? 0.7 : 1,
-                  cursor: loading ? 'not-allowed' : 'pointer'
-                }}
-              >
-                {loading ? 'Authenticating...' : 'Access Dashboard'} {!loading && <ArrowRight size={17} />}
-              </button>
-            </form>
-
-            <div className="login-divider">
-              <span>Quick Demo Access</span>
-            </div>
-
-            <div className="login-demo-grid">
-              {demoUsers.map(({ role, email: dEmail, icon: Icon, color, bg, border }) => {
+            <div className="role-chips">
+              {demoUsers.map(({ role, email: dEmail, icon: Icon }) => {
                 const isActive = activeRole === role;
                 const label = role === 'Receptionist' ? 'Reception' : role === 'Vet Assistant' ? 'Assistant' : role;
                 return (
-                  <button
+                  <div 
                     key={role}
-                    type="button"
-                    className="login-demo-btn"
+                    className={`role-chip ${isActive ? 'active' : ''}`}
                     onClick={() => selectDemoUser(role, dEmail)}
-                    style={{
-                      backgroundColor: isActive ? bg : '#f8fafc',
-                      borderColor: isActive ? border : '#e2e8f0',
-                      color: isActive ? color : '#475569',
-                      boxShadow: isActive ? `0 4px 10px ${color}22` : 'none',
-                      transform: isActive ? 'translateY(-1px)' : 'none',
-                    }}
                   >
-                    <Icon size={15} /> {label}
-                  </button>
+                    <Icon size={14} />
+                    {label}
+                  </div>
                 );
               })}
             </div>
 
-            <div className="login-footer">
-              <ShieldCheck size={14} style={{ color: '#14b8a6' }} />
-              <span>End-to-End Encrypted Login</span>
+            <form onSubmit={handleLogin}>
+              <div className="premium-input-group">
+                <input
+                  type="text"
+                  className="premium-input"
+                  placeholder=" "
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+                <label className="input-label-float">Email Address or Username</label>
+                <Mail size={18} className="premium-input-icon" />
+              </div>
+
+              <div className="premium-input-group">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  className="premium-input"
+                  placeholder=" "
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <label className="input-label-float">Password</label>
+                <Lock size={18} className="premium-input-icon" />
+                
+                <div className="password-actions">
+                  {capsLockActive && <span className="caps-lock-warning">CAPS</span>}
+                  <button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)}>
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+
+              <button 
+                type="submit" 
+                className="premium-submit-btn" 
+                disabled={loading || success}
+              >
+                {success ? (
+                  <>
+                    <CheckCircle size={20} /> Success! Redirecting...
+                  </>
+                ) : loading ? (
+                  'Authenticating...'
+                ) : (
+                  <>
+                    Access Dashboard <ArrowRight size={18} className="btn-arrow" />
+                  </>
+                )}
+              </button>
+            </form>
+
+            <div className="trust-indicators">
+              <div className="trust-item"><ShieldCheck size={14} /> SSL Secured</div>
+              <div className="trust-item"><CheckCircle size={14} /> ISO Certified</div>
+              <div className="trust-item"><Shield size={14} /> HIPAA Ready</div>
             </div>
+
           </div>
         </div>
       </div>
