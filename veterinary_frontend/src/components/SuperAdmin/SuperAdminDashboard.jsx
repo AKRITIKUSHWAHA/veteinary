@@ -24,38 +24,38 @@ export default function SuperAdminDashboard() {
   }, []);
 
   if (loading || !stats) {
-    return <div className="p-8 text-white">Loading Command Center...</div>;
+    return <div style={{ padding: '2rem', color: 'white' }}>Loading Command Center...</div>;
   }
 
   const statCards = [
-    { label: 'Total Clinics', value: stats.totalClinics, icon: Building2, color: 'text-blue-400', bg: 'bg-blue-400/10' },
-    { label: 'Active Clinics', value: stats.activeClinics, icon: Activity, color: 'text-teal-400', bg: 'bg-teal-400/10' },
-    { label: 'Trial Clinics', value: stats.trialClinics, icon: TrendingUp, color: 'text-yellow-400', bg: 'bg-yellow-400/10' },
-    { label: 'Expired Trials', value: stats.expiredTrials, icon: Building2, color: 'text-red-400', bg: 'bg-red-400/10' },
-    { label: 'Paid Clinics', value: stats.paidClinics, icon: DollarSign, color: 'text-emerald-400', bg: 'bg-emerald-400/10' },
-    { label: 'Total Doctors', value: stats.totalDoctors, icon: Users, color: 'text-purple-400', bg: 'bg-purple-400/10' },
-    { label: 'Total Patients', value: stats.totalPatients, icon: Users, color: 'text-indigo-400', bg: 'bg-indigo-400/10' },
-    { label: 'Monthly Revenue', value: `$${stats.monthlyRevenue.toLocaleString()}`, icon: DollarSign, color: 'text-green-400', bg: 'bg-green-400/10' },
-    { label: 'Total Revenue', value: `$${stats.totalRevenue.toLocaleString()}`, icon: DollarSign, color: 'text-green-500', bg: 'bg-green-500/10' },
-    { label: 'Open Tickets', value: stats.openSupportTickets, icon: Ticket, color: 'text-orange-400', bg: 'bg-orange-400/10' }
+    { label: 'Total Clinics', value: stats.totalClinics, icon: Building2, color: '#60a5fa', bg: 'rgba(96, 165, 250, 0.1)' },
+    { label: 'Active Clinics', value: stats.activeClinics, icon: Activity, color: '#2dd4bf', bg: 'rgba(45, 212, 191, 0.1)' },
+    { label: 'Trial Clinics', value: stats.trialClinics, icon: TrendingUp, color: '#facc15', bg: 'rgba(250, 204, 21, 0.1)' },
+    { label: 'Expired Trials', value: stats.expiredTrials, icon: Building2, color: '#f87171', bg: 'rgba(248, 113, 113, 0.1)' },
+    { label: 'Paid Clinics', value: stats.paidClinics, icon: DollarSign, color: '#34d399', bg: 'rgba(52, 211, 153, 0.1)' },
+    { label: 'Total Doctors', value: stats.totalDoctors, icon: Users, color: '#c084fc', bg: 'rgba(192, 132, 252, 0.1)' },
+    { label: 'Total Patients', value: stats.totalPatients, icon: Users, color: '#818cf8', bg: 'rgba(129, 140, 248, 0.1)' },
+    { label: 'Monthly Revenue', value: `$${stats.monthlyRevenue.toLocaleString()}`, icon: DollarSign, color: '#4ade80', bg: 'rgba(74, 222, 128, 0.1)' },
+    { label: 'Total Revenue', value: `$${stats.totalRevenue.toLocaleString()}`, icon: DollarSign, color: '#22c55e', bg: 'rgba(34, 197, 94, 0.1)' },
+    { label: 'Open Tickets', value: stats.openSupportTickets, icon: Ticket, color: '#fb923c', bg: 'rgba(251, 146, 60, 0.1)' }
   ];
 
   return (
-    <div className="p-8 w-full max-w-7xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white tracking-tight">Command Center</h1>
-        <p className="text-slate-400 mt-2">Overview of VetCare Pro global platform metrics.</p>
+    <div className="sa-dashboard-container">
+      <div>
+        <h1 className="sa-page-title">Command Center</h1>
+        <p className="sa-page-subtitle">Overview of VetCare Pro global platform metrics.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+      <div className="sa-stats-grid">
         {statCards.map((stat, idx) => (
-          <div key={idx} className="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:bg-slate-800/50 transition-colors">
-            <div className="flex justify-between items-start">
+          <div key={idx} className="sa-stat-card">
+            <div className="sa-stat-header">
               <div>
-                <p className="text-slate-400 text-sm font-medium">{stat.label}</p>
-                <h3 className="text-2xl font-bold text-white mt-2">{stat.value}</h3>
+                <p className="sa-stat-label">{stat.label}</p>
+                <h3 className="sa-stat-value">{stat.value}</h3>
               </div>
-              <div className={`p-3 rounded-xl ${stat.bg} ${stat.color}`}>
+              <div className="sa-stat-icon-wrapper" style={{ backgroundColor: stat.bg, color: stat.color }}>
                 <stat.icon size={24} />
               </div>
             </div>

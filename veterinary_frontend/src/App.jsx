@@ -27,6 +27,7 @@ import DoctorRevenue from './components/DoctorRevenue';
 import ReminderQueue from './components/ReminderQueue';
 import SuperAdminLogin from './components/SuperAdmin/SuperAdminLogin';
 import SuperAdminLayout from './components/SuperAdmin/SuperAdminLayout';
+import PaymentPage from './components/Checkout/PaymentPage';
 import { tabFromPath, pathForTab, isLegacyPath } from './utils/routes';
 import { Toaster } from 'react-hot-toast';
 
@@ -169,6 +170,10 @@ export default function App() {
     setSelectedPetId(petId);
     setCurrentTab('medical');
   };
+
+  if (location.pathname.startsWith('/checkout/')) {
+    return <PaymentPage />;
+  }
 
   if (location.pathname.startsWith('/super-admin')) {
     if (!isSuperAdmin) {
