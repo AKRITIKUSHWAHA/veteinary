@@ -12,25 +12,28 @@ exports.createOrder = async (req, res) => {
   try {
     const { planId, amount, currency = 'INR', clinicAdminId } = req.body;
 
-    if (!amount || !clinicAdminId) {
-      return res.status(400).json({ status: 'error', message: 'Amount and clinicAdminId are required' });
+    if (!amount) {
+      return res.status(400).json({ status: 'error', message: 'Amount is required' });
     }
 
     const options = {
-      amount: amount * 100, // Razorpay works in paise/smallest currency unit
+      amount: amount * 100, // Razorpay works in paise
       currency,
-      receipt: `receipt_${Date.now()}_${clinicAdminId}`,
+      receipt: `receipt_${Date.now()}`,
     };
 
     const order = await razorpay.orders.create(options);
 
-    // Initial log of payment as pending
-    const paymentId = crypto.randomUUID();
-    await pool.query(
-      `INSERT INTO saas_payments (id, clinic_admin_id, amount, status, currency, razorpay_order_id, plan_id) 
-       VALUES (?, ?, ?, 'Pending', ?, ?, ?)`,
-      [paymentId, clinicAdminId, amount, currency, order.id, planId]
-    );
+    // Only log payment in DB if there's a real user ID (not temp/null)
+    const isRealUser = clinicAdminId && clinicAdminId !== 'temp_user_id';
+    if (isRealUser) {
+      const paymentId = crypto.randomUUID();
+      await pool.query(
+        `INSERT INTO saas_payments (id, clinic_admin_id, amount, status, currency, razorpay_order_id, plan_id) 
+         VALUES (?, ?, ?, 'Pending', ?, ?, ?)`,
+        [paymentId, clinicAdminId, amount, currency, order.id, planId]
+      );
+    }
 
     res.status(200).json({
       status: 'success',
@@ -39,7 +42,6 @@ exports.createOrder = async (req, res) => {
         amount: order.amount,
         currency: order.currency,
         key_id: process.env.RAZORPAY_KEY_ID,
-        internal_payment_id: paymentId
       }
     });
   } catch (error) {
