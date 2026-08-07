@@ -5,8 +5,8 @@ import { apiFetch } from '../../utils/api';
 import '../Login.css';
 
 export default function SuperAdminLogin({ setIsSuperAdmin }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('superadmin@vetcarepro.com');
+  const [password, setPassword] = useState('password123');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
