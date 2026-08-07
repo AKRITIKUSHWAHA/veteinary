@@ -4,8 +4,8 @@ const pool = require('../config/db');
 require('dotenv').config();
 
 const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
+  key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_dummyKeyId',
+  key_secret: process.env.RAZORPAY_KEY_SECRET || 'dummyKeySecret',
 });
 
 exports.createOrder = async (req, res) => {
