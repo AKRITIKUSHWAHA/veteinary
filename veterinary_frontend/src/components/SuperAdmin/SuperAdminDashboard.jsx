@@ -27,15 +27,46 @@ export default function SuperAdminDashboard() {
     fetchStats();
   }, []);
 
-  const statsData = stats || {
-    totalRevenue: '₹4.5L',
-    totalRevenueRaw: '₹4,45,010',
-    monthlyRevenue: '₹1.2k',
+  const formatRevenue = (value) => {
+    if (value === undefined || value === null) return '₹0';
+    if (typeof value === 'string' && value.includes('₹')) return value;
+    const num = Number(value);
+    if (isNaN(num)) return `₹${value}`;
+    if (num >= 100000) {
+      return `₹${(num / 100000).toFixed(1)}L`;
+    }
+    if (num >= 1000) {
+      return `₹${(num / 1000).toFixed(1)}K`;
+    }
+    return `₹${num}`;
+  };
+
+  const formatRawRevenue = (value) => {
+    if (value === undefined || value === null) return '₹0';
+    if (typeof value === 'string' && value.includes('₹')) return value;
+    const num = Number(value);
+    if (isNaN(num)) return `₹${value}`;
+    return `₹${num.toLocaleString('en-IN')}`;
+  };
+
+  const statsData = stats ? {
+    totalRevenue: stats.totalRevenue,
+    totalRevenueRaw: stats.totalRevenue,
+    monthlyRevenue: stats.monthlyRevenue,
+    totalAdmins: stats.totalClinics,
+    activePaidAdmins: stats.paidClinics,
+    freeTrialAdmins: stats.trialClinics,
+    expiredBlocked: stats.expiredTrials,
+    openTickets: stats.openSupportTickets
+  } : {
+    totalRevenue: 520000,
+    totalRevenueRaw: 520000,
+    monthlyRevenue: 45000,
     totalAdmins: 30,
     activePaidAdmins: 24,
     freeTrialAdmins: 9,
     expiredBlocked: 6,
-    openTickets: 0
+    openTickets: 12
   };
 
   const renewalsList = [
@@ -62,7 +93,7 @@ export default function SuperAdminDashboard() {
           <div className="sa-card-top">
             <div>
               <span className="sa-card-label">TOTAL REVENUE</span>
-              <div className="sa-card-value">{statsData.totalRevenue || '₹4.5L'}</div>
+              <div className="sa-card-value">{formatRevenue(statsData.totalRevenue)}</div>
             </div>
             <div className="sa-card-watermark cyan">
               <IndianRupee size={28} />
@@ -70,7 +101,7 @@ export default function SuperAdminDashboard() {
           </div>
           <div className="sa-card-bottom">
             <span className="sa-trend green">↑ 12%</span>
-            <span className="sa-trend-sub">{statsData.totalRevenueRaw || '₹4,45,010'}</span>
+            <span className="sa-trend-sub">{formatRawRevenue(statsData.totalRevenueRaw)}</span>
           </div>
         </div>
 
@@ -79,7 +110,7 @@ export default function SuperAdminDashboard() {
           <div className="sa-card-top">
             <div>
               <span className="sa-card-label">MONTHLY REVENUE</span>
-              <div className="sa-card-value">{statsData.monthlyRevenue || '₹1.2k'}</div>
+              <div className="sa-card-value">{formatRevenue(statsData.monthlyRevenue)}</div>
             </div>
             <div className="sa-card-watermark emerald">
               <BarChart2 size={28} />
@@ -181,15 +212,15 @@ export default function SuperAdminDashboard() {
       {/* Dark Summary Banner */}
       <div className="sa-dark-banner">
         <div className="sa-banner-item">
-          <div className="sa-banner-val">{statsData.totalRevenue || '₹4.5L'}</div>
+          <div className="sa-banner-val">{formatRevenue(statsData.totalRevenue)}</div>
           <div className="sa-banner-lbl">Total Revenue</div>
         </div>
         <div className="sa-banner-item">
-          <div className="sa-banner-val">{statsData.monthlyRevenue || '₹1.2k'}</div>
+          <div className="sa-banner-val">{formatRevenue(statsData.monthlyRevenue)}</div>
           <div className="sa-banner-lbl">Monthly</div>
         </div>
         <div className="sa-banner-item">
-          <div className="sa-banner-val">{statsData.totalAdmins || 30}</div>
+          <div className="sa-banner-val">{statsData.totalAdmins}</div>
           <div className="sa-banner-lbl">Admins</div>
         </div>
       </div>

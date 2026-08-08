@@ -1,81 +1,116 @@
 import React, { useState } from 'react';
-import { Search, MessageSquare, AlertCircle, CheckCircle2, X, Send, Clock, UserCheck } from 'lucide-react';
+import { Search, ArrowLeft, Send, CheckCircle2, AlertCircle, MessageSquare, Clipboard, User, Mail, ShieldAlert } from 'lucide-react';
 
 export default function SuperAdminTickets() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [priorityFilter, setPriorityFilter] = useState('All');
+  
+  // Active selected filters applied to table
+  const [appliedFilters, setAppliedFilters] = useState({ status: 'All', priority: 'All' });
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [replyText, setReplyText] = useState('');
 
+  // Initial mock tickets matching user's screens
   const [tickets, setTickets] = useState([
     {
-      id: '#T-1042',
-      subject: 'Billing issue with new Pro plan upgrading',
-      clinic: 'Downtown Vet Clinic',
-      adminName: 'Dr. John Doe',
-      priority: 'High',
-      status: 'Open',
-      date: '2 hours ago',
-      messages: [
-        { sender: 'Dr. John Doe', text: 'Hi, I paid for the Monthly Pro plan via Razorpay UPI but my dashboard still says Trial status.', time: '2 hours ago', isUser: true }
-      ]
-    },
-    {
-      id: '#T-1041',
-      subject: 'How to add a 6th doctor to clinic account?',
-      clinic: 'Paws & Claws Care',
-      adminName: 'Dr. Vikram Singh',
+      id: 'TKT-1786006334931-390',
+      subject: 'Payment',
+      clinic: 'anytime',
+      adminName: 'anytime',
+      email: 'anytimefitness@gmail.com',
       priority: 'Medium',
-      status: 'In Progress',
-      date: '5 hours ago',
+      category: 'Technical',
+      status: 'Replied',
+      updated: '6/8/2026',
       messages: [
-        { sender: 'Dr. Vikram Singh', text: 'We reached our 5 doctor limit on Pro plan. How do we purchase an addon license?', time: '5 hours ago', isUser: true },
-        { sender: 'SuperAdmin', text: 'Hello Dr. Vikram, you can either upgrade to Enterprise or add single seats via Settings > Addons.', time: '3 hours ago', isUser: false }
+        { sender: 'Admin', text: 'this issee', time: '06/08/26, 2:22 pm', isUser: true },
+        { sender: 'Superadmin', text: 'hyyy', time: '06/08/26, 2:27 pm', isUser: false }
       ]
     },
     {
-      id: '#T-1040',
-      subject: 'System running slow during checkout invoicing',
-      clinic: 'City Animal Hospital',
-      adminName: 'Dr. Anjali Sharma',
-      priority: 'Urgent',
+      id: 'TKT-1892017382103-512',
+      subject: 'Login Issue',
+      clinic: 'Paws & Claws Care',
+      adminName: 'Dr. John Doe',
+      email: 'john.doe@pawsclaws.com',
+      priority: 'High',
+      category: 'Technical',
       status: 'Open',
-      date: '1 day ago',
+      updated: '7/8/2026',
       messages: [
-        { sender: 'Dr. Anjali Sharma', text: 'Invoicing generation is taking 10+ seconds today. Please check server performance.', time: '1 day ago', isUser: true }
+        { sender: 'Admin', text: 'Dashboard is loading slow today and showing connection timeout errors.', time: '07/08/26, 10:15 am', isUser: true }
       ]
     },
     {
-      id: '#T-1039',
-      subject: 'Request for custom API integration with Lab software',
-      clinic: 'Happy Pets Hospital',
-      adminName: 'Rajesh Kumar',
+      id: 'TKT-1634891290342-108',
+      subject: 'Invoice Generation',
+      clinic: 'Happy Pets Clinic',
+      adminName: 'Dr. Sarah Connor',
+      email: 'sarah.connor@happypets.com',
       priority: 'Low',
+      category: 'Billing',
       status: 'Closed',
-      date: '3 days ago',
+      updated: '5/8/2026',
       messages: [
-        { sender: 'Rajesh Kumar', text: 'Do you offer REST API webhooks for lab diagnostic results?', time: '3 days ago', isUser: true },
-        { sender: 'SuperAdmin', text: 'Yes, custom API webhooks are available on the Enterprise tier. We sent documentation to your email.', time: '2 days ago', isUser: false }
+        { sender: 'Admin', text: 'How do I download duplicate copies of receipts?', time: '05/08/26, 11:30 am', isUser: true },
+        { sender: 'Superadmin', text: 'You can go to Billing & POS and click download icon next to any invoice.', time: '05/08/26, 11:45 am', isUser: false }
       ]
     }
   ]);
+
+  // Statistics
+  const totalTickets = tickets.length;
+  const openCount = tickets.filter(t => t.status === 'Open').length;
+  const repliedCount = tickets.filter(t => t.status === 'Replied').length;
+  const closedCount = tickets.filter(t => t.status === 'Closed').length;
+
+  const handleApplyFilters = () => {
+    setAppliedFilters({ status: statusFilter, priority: priorityFilter });
+  };
+
+  const handleResetFilters = () => {
+    setStatusFilter('All');
+    setPriorityFilter('All');
+    setAppliedFilters({ status: 'All', priority: 'All' });
+    setSearch('');
+  };
+
+  const handleStatusChange = (ticketId, newStatus) => {
+    setTickets(prev => prev.map(t => {
+      if (t.id === ticketId) {
+        const updated = { ...t, status: newStatus, updated: 'Today' };
+        if (selectedTicket?.id === ticketId) {
+          setSelectedTicket(updated);
+        }
+        return updated;
+      }
+      return t;
+    }));
+  };
 
   const handleSendReply = (e) => {
     e.preventDefault();
     if (!replyText.trim() || !selectedTicket) return;
 
+    const now = new Date();
+    const formattedTime = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getFullYear()).substring(2)}, ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }).toLowerCase()}`;
+
     const newMsg = {
-      sender: 'SuperAdmin',
+      sender: 'Superadmin',
       text: replyText.trim(),
-      time: 'Just now',
+      time: formattedTime,
       isUser: false
     };
 
     setTickets(prev => prev.map(t => {
       if (t.id === selectedTicket.id) {
-        const updatedMsgs = [...t.messages, newMsg];
-        const updatedStatus = t.status === 'Open' ? 'In Progress' : t.status;
-        const updatedTicket = { ...t, messages: updatedMsgs, status: updatedStatus };
+        const updatedTicket = {
+          ...t,
+          status: 'Replied',
+          updated: 'Just now',
+          messages: [...t.messages, newMsg]
+        };
         setSelectedTicket(updatedTicket);
         return updatedTicket;
       }
@@ -85,194 +120,344 @@ export default function SuperAdminTickets() {
     setReplyText('');
   };
 
-  const handleStatusChange = (ticketId, newStatus) => {
-    setTickets(prev => prev.map(t => {
-      if (t.id === ticketId) {
-        const updated = { ...t, status: newStatus };
-        if (selectedTicket?.id === ticketId) setSelectedTicket(updated);
-        return updated;
-      }
-      return t;
-    }));
-  };
-
+  // Filtered list
   const filteredTickets = tickets.filter(t => {
     const matchesSearch = t.subject.toLowerCase().includes(search.toLowerCase()) ||
       t.clinic.toLowerCase().includes(search.toLowerCase()) ||
       t.id.toLowerCase().includes(search.toLowerCase());
-    
-    if (statusFilter === 'All') return matchesSearch;
-    return matchesSearch && t.status === statusFilter;
+
+    const matchesStatus = appliedFilters.status === 'All' || t.status === appliedFilters.status;
+    const matchesPriority = appliedFilters.priority === 'All' || t.priority === appliedFilters.priority;
+
+    return matchesSearch && matchesStatus && matchesPriority;
   });
 
   return (
     <div className="sa-dash-wrapper">
-      <div className="sa-renewals-header">
+      {/* Back to List Header / Page Title */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1 className="sa-dash-title">Support Tickets</h1>
-          <p className="sa-dash-subtitle">Respond to clinic admin helpdesk inquiries and technical requests.</p>
+          <p className="sa-dash-subtitle">Manage all clinic owner support requests</p>
         </div>
-
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-          <div className="sa-search-bar">
-            <Search size={18} className="sa-search-icon" />
-            <input
-              type="text"
-              placeholder="Search tickets or clinic..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="sa-search-input"
-            />
-          </div>
-
-          <div className="sa-select-wrapper">
-            <select 
-              value={statusFilter} 
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="sa-filter-select"
-            >
-              <option value="All">All Statuses</option>
-              <option value="Open">Open</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Closed">Closed</option>
-            </select>
-          </div>
-        </div>
+        {selectedTicket && (
+          <button 
+            onClick={() => setSelectedTicket(null)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.5rem 1rem',
+              backgroundColor: '#fff',
+              border: '1.5px solid #3b82f6',
+              color: '#3b82f6',
+              borderRadius: '8px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontSize: '0.85rem'
+            }}
+          >
+            <ArrowLeft size={16} /> Back to List
+          </button>
+        )}
       </div>
 
-      <div className="sa-renewals-card">
-        <div className="sa-table-responsive">
-          <table className="sa-renewals-table">
-            <thead>
-              <tr>
-                <th>Ticket Details</th>
-                <th>Clinic Name</th>
-                <th>Priority</th>
-                <th>Status</th>
-                <th>Last Updated</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredTickets.length === 0 ? (
-                <tr><td colSpan="6" style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>No tickets found.</td></tr>
-              ) : (
-                filteredTickets.map((t) => (
-                  <tr key={t.id}>
-                    <td>
-                      <div className="sa-td-bold">{t.subject}</div>
-                      <div style={{ fontSize: '0.75rem', color: '#94a3b8', fontFamily: 'monospace' }}>{t.id}</div>
-                    </td>
+      {!selectedTicket ? (
+        <>
+          {/* 4 Stat Cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem' }}>
+            {/* Card 1: Total */}
+            <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '1.25rem', border: '1px solid #e2e8f0', borderLeft: '5px solid #3b82f6', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+              <div style={{ fontSize: '2rem', fontWeight: 800, color: '#1e293b' }}>{totalTickets}</div>
+              <div style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600, marginTop: '0.25rem' }}>Total</div>
+            </div>
+            
+            {/* Card 2: Open */}
+            <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '1.25rem', border: '1px solid #e2e8f0', borderLeft: '5px solid #06b6d4', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+              <div style={{ fontSize: '2rem', fontWeight: 800, color: '#1e293b' }}>{openCount}</div>
+              <div style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600, marginTop: '0.25rem' }}>Open</div>
+            </div>
 
-                    <td>
-                      <div style={{ fontWeight: 600, color: '#334155' }}>{t.clinic}</div>
-                      <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{t.adminName}</div>
-                    </td>
+            {/* Card 3: Replied */}
+            <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '1.25rem', border: '1px solid #e2e8f0', borderLeft: '5px solid #a855f7', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+              <div style={{ fontSize: '2rem', fontWeight: 800, color: '#1e293b' }}>{repliedCount}</div>
+              <div style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600, marginTop: '0.25rem' }}>Replied</div>
+            </div>
 
-                    <td>
-                      <span style={{
-                        padding: '0.25rem 0.65rem', borderRadius: '999px', fontSize: '0.75rem', fontWeight: 700,
-                        backgroundColor: t.priority === 'Urgent' ? '#fee2e2' : t.priority === 'High' ? '#fef3c7' : '#e0f2fe',
-                        color: t.priority === 'Urgent' ? '#b91c1c' : t.priority === 'High' ? '#b45309' : '#0369a1'
-                      }}>
-                        {t.priority}
-                      </span>
-                    </td>
+            {/* Card 4: Closed */}
+            <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '1.25rem', border: '1px solid #e2e8f0', borderLeft: '5px solid #10b981', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+              <div style={{ fontSize: '2rem', fontWeight: 800, color: '#1e293b' }}>{closedCount}</div>
+              <div style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600, marginTop: '0.25rem' }}>Closed</div>
+            </div>
+          </div>
 
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                        {t.status === 'Open' && <AlertCircle size={15} color="#ef4444" />}
-                        {t.status === 'In Progress' && <MessageSquare size={15} color="#f59e0b" />}
-                        {t.status === 'Closed' && <CheckCircle2 size={15} color="#16a34a" />}
-                        <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>{t.status}</span>
-                      </div>
-                    </td>
-
-                    <td>{t.date}</td>
-
-                    <td>
-                      <button 
-                        onClick={() => setSelectedTicket(t)}
-                        style={{ background: '#14b8a6', color: '#fff', border: 'none', padding: '0.35rem 0.85rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}
-                      >
-                        View & Reply
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Ticket Details & Reply Modal */}
-      {selectedTicket && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(15,23,42,0.6)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem'
-        }}>
-          <div style={{
-            backgroundColor: '#ffffff', borderRadius: '16px', padding: '1.75rem', width: '100%', maxWidth: '580px',
-            boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '1rem'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <div>
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#14b8a6', fontFamily: 'monospace' }}>{selectedTicket.id}</span>
-                <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#0f172a', margin: '0.15rem 0 0 0' }}>{selectedTicket.subject}</h3>
-                <div style={{ fontSize: '0.8rem', color: '#64748b' }}>From: {selectedTicket.adminName} ({selectedTicket.clinic})</div>
+          {/* Filter Panel */}
+          <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '1.5rem', border: '1px solid #e2e8f0', boxShadow: '0 2px 4px rgba(0,0,0,0.02)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', alignItems: 'flex-end' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', minWidth: '150px' }}>
+                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#475569' }}>Status</span>
+                <select 
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  style={{ padding: '0.5rem 0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.85rem', outline: 'none' }}
+                >
+                  <option value="All">All</option>
+                  <option value="Open">Open</option>
+                  <option value="Replied">Replied</option>
+                  <option value="Closed">Closed</option>
+                </select>
               </div>
-              <button onClick={() => setSelectedTicket(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}>
-                <X size={20} />
-              </button>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', minWidth: '150px' }}>
+                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#475569' }}>Priority</span>
+                <select 
+                  value={priorityFilter}
+                  onChange={(e) => setPriorityFilter(e.target.value)}
+                  style={{ padding: '0.5rem 0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.85rem', outline: 'none' }}
+                >
+                  <option value="All">All</option>
+                  <option value="Low">Low</option>
+                  <option value="Medium">Medium</option>
+                  <option value="High">High</option>
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1, minWidth: '220px' }}>
+                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#475569' }}>Search Clinic/Subject</span>
+                <input 
+                  type="text"
+                  placeholder="Type to search..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  style={{ padding: '0.5rem 0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.85rem', outline: 'none' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.75rem' }}>
+                <button 
+                  onClick={handleApplyFilters}
+                  style={{ padding: '0.5rem 1.25rem', backgroundColor: '#6366f1', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', transition: 'background-color 0.2s' }}
+                  onMouseOver={(e) => e.target.style.backgroundColor = '#4f46e5'}
+                  onMouseOut={(e) => e.target.style.backgroundColor = '#6366f1'}
+                >
+                  Apply Filters
+                </button>
+                <button 
+                  onClick={handleResetFilters}
+                  style={{ padding: '0.5rem 1.25rem', backgroundColor: '#fff', border: '1.5px solid #cbd5e1', color: '#475569', borderRadius: '8px', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}
+                >
+                  Reset
+                </button>
+              </div>
             </div>
-
-            {/* Status Change Selector */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: '#f8fafc', padding: '0.65rem 1rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#334155' }}>Update Ticket Status:</span>
-              <select 
-                value={selectedTicket.status} 
-                onChange={(e) => handleStatusChange(selectedTicket.id, e.target.value)}
-                style={{ padding: '0.35rem 0.75rem', borderRadius: '6px', border: '1px solid #cbd5e1', outline: 'none', fontWeight: 600 }}
-              >
-                <option value="Open">Open</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Closed">Closed</option>
-              </select>
-            </div>
-
-            {/* Messages Log */}
-            <div style={{ maxHeight: '240px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: '0.5rem 0' }}>
-              {selectedTicket.messages.map((msg, idx) => (
-                <div key={idx} style={{
-                  alignSelf: msg.isUser ? 'flex-start' : 'flex-end',
-                  backgroundColor: msg.isUser ? '#f1f5f9' : '#ccfbf1',
-                  color: msg.isUser ? '#0f172a' : '#0f766e',
-                  padding: '0.75rem 1rem', borderRadius: '12px', maxWidth: '85%'
-                }}>
-                  <div style={{ fontSize: '0.725rem', fontWeight: 700, marginBottom: '0.2rem', color: msg.isUser ? '#475569' : '#0d9488' }}>
-                    {msg.sender} · {msg.time}
-                  </div>
-                  <div style={{ fontSize: '0.875rem', lineHeight: 1.4 }}>{msg.text}</div>
-                </div>
-              ))}
-            </div>
-
-            {/* Reply Input */}
-            <form onSubmit={handleSendReply} style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-              <input 
-                type="text" 
-                placeholder="Type your response to clinic admin..."
-                value={replyText}
-                onChange={(e) => setReplyText(e.target.value)}
-                style={{ flex: 1, padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none' }}
-              />
-              <button type="submit" style={{ padding: '0.65rem 1.25rem', borderRadius: '8px', border: 'none', background: '#14b8a6', color: '#fff', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                <Send size={16} /> Send
-              </button>
-            </form>
-
           </div>
+
+          {/* Tickets Table */}
+          <div className="sa-renewals-card">
+            <div className="sa-table-responsive">
+              <table className="sa-renewals-table">
+                <thead>
+                  <tr style={{ backgroundColor: '#fff7ed', borderBottom: '2px solid #ffedd5' }}>
+                    <th style={{ color: '#c2410c', fontWeight: 700 }}>TICKET #</th>
+                    <th style={{ color: '#c2410c', fontWeight: 700 }}>CLINIC / ADMIN</th>
+                    <th style={{ color: '#c2410c', fontWeight: 700 }}>SUBJECT</th>
+                    <th style={{ color: '#c2410c', fontWeight: 700 }}>PRIORITY</th>
+                    <th style={{ color: '#c2410c', fontWeight: 700 }}>STATUS</th>
+                    <th style={{ color: '#c2410c', fontWeight: 700 }}>UPDATED</th>
+                    <th style={{ color: '#c2410c', fontWeight: 700 }}>ACTION</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredTickets.length === 0 ? (
+                    <tr>
+                      <td colSpan="7" style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>
+                        No tickets found matching your filter criteria.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredTickets.map((t) => (
+                      <tr key={t.id}>
+                        <td style={{ fontFamily: 'monospace', color: '#64748b', fontSize: '0.8rem' }}>{t.id}</td>
+                        <td>
+                          <div style={{ fontWeight: 700, color: '#334155' }}>{t.clinic}</div>
+                          <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{t.adminName}</div>
+                        </td>
+                        <td style={{ fontWeight: 600, color: '#1e293b' }}>{t.subject}</td>
+                        <td>
+                          <span style={{
+                            padding: '0.25rem 0.65rem',
+                            borderRadius: '20px',
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            backgroundColor: t.priority === 'High' ? '#fff7ed' : t.priority === 'Medium' ? '#fef3c7' : '#f0fdf4',
+                            color: t.priority === 'High' ? '#ea580c' : t.priority === 'Medium' ? '#d97706' : '#16a34a'
+                          }}>
+                            {t.priority}
+                          </span>
+                        </td>
+                        <td>
+                          <span style={{
+                            padding: '0.25rem 0.65rem',
+                            borderRadius: '20px',
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            backgroundColor: t.status === 'Open' ? '#fef2f2' : t.status === 'Replied' ? '#faf5ff' : '#ecfdf5',
+                            color: t.status === 'Open' ? '#ef4444' : t.status === 'Replied' ? '#a855f7' : '#10b981'
+                          }}>
+                            {t.status}
+                          </span>
+                        </td>
+                        <td style={{ fontSize: '0.85rem', color: '#475569' }}>{t.updated}</td>
+                        <td>
+                          <button 
+                            onClick={() => setSelectedTicket(t)}
+                            style={{
+                              padding: '0.35rem 0.85rem',
+                              backgroundColor: '#fff',
+                              border: '1.5px solid #cbd5e1',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              fontSize: '0.8rem',
+                              fontWeight: 700,
+                              color: '#334155',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                          >
+                            Open <span style={{ fontSize: '0.9rem' }}>→</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      ) : (
+        /* Full screen Chat Flow - matches image exactly */
+        <div style={{ backgroundColor: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          
+          {/* Header Info */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '1.25rem' }}>
+            <div>
+              <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 600, fontFamily: 'monospace' }}>{selectedTicket.id}</span>
+              <h2 style={{ fontSize: '2rem', fontWeight: 800, color: '#0f172a', margin: '0.25rem 0 0.5rem 0', letterSpacing: '-0.5px' }}>{selectedTicket.subject}</h2>
+              
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', color: '#64748b', fontSize: '0.82rem', marginTop: '0.5rem' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clipboard size={14} /> {selectedTicket.clinic}</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><User size={14} /> {selectedTicket.adminName}</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Mail size={14} /> {selectedTicket.email}</span>
+              </div>
+            </div>
+
+            {/* Badges */}
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <span style={{ padding: '0.35rem 0.85rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 700, backgroundColor: '#faf5ff', color: '#9333ea' }}>{selectedTicket.status}</span>
+              <span style={{ padding: '0.35rem 0.85rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 700, backgroundColor: '#fffbeb', color: '#d97706' }}>{selectedTicket.priority}</span>
+              <span style={{ padding: '0.35rem 0.85rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 700, backgroundColor: '#f0fdfa', color: '#0d9488' }}>{selectedTicket.category}</span>
+            </div>
+          </div>
+
+          {/* Quick status change buttons */}
+          <div style={{ display: 'flex', gap: '0.5rem', background: '#f8fafc', padding: '0.5rem', borderRadius: '8px', border: '1px solid #e2e8f0', width: 'fit-content' }}>
+            <button 
+              onClick={() => handleStatusChange(selectedTicket.id, 'Open')}
+              style={{ padding: '0.4rem 1rem', border: 'none', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', backgroundColor: selectedTicket.status === 'Open' ? '#ef4444' : 'transparent', color: selectedTicket.status === 'Open' ? '#fff' : '#64748b' }}
+            >
+              Open
+            </button>
+            <button 
+              onClick={() => handleStatusChange(selectedTicket.id, 'Replied')}
+              style={{ padding: '0.4rem 1rem', border: 'none', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', backgroundColor: selectedTicket.status === 'Replied' ? '#a855f7' : 'transparent', color: selectedTicket.status === 'Replied' ? '#fff' : '#64748b' }}
+            >
+              Replied
+            </button>
+            <button 
+              onClick={() => handleStatusChange(selectedTicket.id, 'Closed')}
+              style={{ padding: '0.4rem 1rem', border: 'none', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', backgroundColor: selectedTicket.status === 'Closed' ? '#10b981' : 'transparent', color: selectedTicket.status === 'Closed' ? '#fff' : '#64748b' }}
+            >
+              Closed
+            </button>
+          </div>
+
+          {/* Chat box container */}
+          <div style={{ minHeight: '300px', display: 'flex', flexDirection: 'column', gap: '1rem', padding: '1rem 0', overflowY: 'auto' }}>
+            {selectedTicket.messages.map((msg, idx) => {
+              const isSelf = !msg.isUser;
+              return (
+                <div 
+                  key={idx} 
+                  style={{
+                    alignSelf: isSelf ? 'flex-end' : 'flex-start',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: isSelf ? 'flex-end' : 'flex-start',
+                    maxWidth: '75%'
+                  }}
+                >
+                  <div style={{
+                    backgroundColor: isSelf ? '#3b82f6' : '#f1f5f9',
+                    color: isSelf ? '#ffffff' : '#0f172a',
+                    padding: '0.85rem 1.25rem',
+                    borderRadius: isSelf ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                    fontSize: '0.9rem',
+                    lineHeight: 1.4
+                  }}>
+                    {msg.text}
+                  </div>
+                  <span style={{ fontSize: '0.72rem', color: '#94a3b8', marginTop: '0.35rem', fontWeight: 600 }}>
+                    {msg.sender} · {msg.time}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Send Reply box */}
+          <form onSubmit={handleSendReply} style={{ display: 'flex', gap: '0.75rem', borderTop: '1px solid #f1f5f9', paddingTop: '1.25rem' }}>
+            <input 
+              type="text"
+              placeholder="Type your reply to the admin..."
+              value={replyText}
+              onChange={(e) => setReplyText(e.target.value)}
+              style={{
+                flex: 1,
+                padding: '0.75rem 1rem',
+                borderRadius: '8px',
+                border: '1.5px solid #cbd5e1',
+                fontSize: '0.9rem',
+                outline: 'none',
+                transition: 'border-color 0.2s'
+              }}
+              onFocus={(e) => e.target.style.borderColor = '#6366f1'}
+              onBlur={(e) => e.target.style.borderColor = '#cbd5e1'}
+            />
+            <button 
+              type="submit"
+              style={{
+                padding: '0.75rem 1.75rem',
+                backgroundColor: '#6366f1',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '8px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseOver={(e) => e.target.style.backgroundColor = '#4f46e5'}
+              onMouseOut={(e) => e.target.style.backgroundColor = '#6366f1'}
+            >
+              Send
+            </button>
+          </form>
+
         </div>
       )}
     </div>

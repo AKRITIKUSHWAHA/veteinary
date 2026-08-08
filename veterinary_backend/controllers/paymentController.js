@@ -1,6 +1,7 @@
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const pool = require('../config/db');
+const emailService = require('../services/emailService');
 require('dotenv').config();
 
 const razorpay = new Razorpay({
@@ -91,7 +92,81 @@ exports.verifyPayment = async (req, res) => {
         [subId, clinicAdminId, planId, startDate, endDate, razorpay_payment_id, endDate, razorpay_payment_id]
       );
 
-      // Optional: update users table if they are clinic admin to set is_subscribed = true or similar if that exists.
+      // Fetch user email to send transactional receipt email
+      try {
+        const [users] = await pool.query('SELECT name, email FROM users WHERE id = ?', [clinicAdminId]);
+        if (users.length > 0) {
+          const user = users[0];
+          const userName = user.name || 'Clinic Administrator';
+          const userEmail = user.email;
+
+          // Map plan ID to beautiful plan name
+          const planMap = {
+            basic: 'Basic Plan',
+            pro: 'Pro Plan',
+            enterprise: 'Enterprise Plan'
+          };
+          const planName = planMap[planId] || `${planId.toUpperCase()} Plan`;
+          
+          const now = new Date();
+          const formattedDate = `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()}`;
+
+          const receiptHtml = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+              <div style="background-color: #0f172a; padding: 1.5rem; text-align: center;">
+                <span style="color: #ffffff; font-weight: 800; font-size: 1.25rem; letter-spacing: 0.5px;">KIAAN</span>
+                <span style="color: #2dd4bf; font-weight: 800; font-size: 1.25rem; letter-spacing: 0.5px;">VETERINARY</span>
+              </div>
+              <div style="padding: 2rem;">
+                <div style="display: inline-block; background-color: #dcfce7; color: #15803d; font-size: 0.75rem; font-weight: 700; padding: 0.35rem 0.75rem; border-radius: 4px; text-transform: uppercase; margin-bottom: 1.25rem;">
+                  Payment Successful
+                </div>
+                <h2 style="font-size: 1.25rem; font-weight: 700; color: #0f172a; margin-top: 0; margin-bottom: 0.5rem;">Payment Receipt #${razorpay_payment_id}</h2>
+                <p style="color: #475569; font-size: 0.9rem; line-height: 1.5; margin-bottom: 1.5rem;">Thank you for your payment. Here is your transaction summary for ${userName}:</p>
+                
+                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+                  <thead>
+                    <tr style="border-bottom: 2px solid #e2e8f0; color: #64748b; font-weight: 700;">
+                      <th style="padding: 0.5rem 0;">DESCRIPTION</th>
+                      <th style="padding: 0.5rem 0; text-align: right;">AMOUNT</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                      <td style="padding: 0.75rem 0; color: #0f172a; font-weight: 600;">Plan: ${planName}</td>
+                      <td style="padding: 0.75rem 0; text-align: right; color: #0f172a; font-weight: 600;">₹${amount}</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                      <td style="padding: 0.75rem 0; color: #64748b;">Transaction ID</td>
+                      <td style="padding: 0.75rem 0; text-align: right; color: #334155; font-family: monospace;">${razorpay_payment_id}</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                      <td style="padding: 0.75rem 0; color: #64748b;">Payment Method</td>
+                      <td style="padding: 0.75rem 0; text-align: right; color: #334155;">Razorpay</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 0.75rem 0; color: #64748b;">Date</td>
+                      <td style="padding: 0.75rem 0; text-align: right; color: #334155;">${formattedDate}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div style="background-color: #f8fafc; padding: 1rem; text-align: center; border-top: 1px solid #e2e8f0; color: #64748b; font-size: 0.75rem;">
+                © 2026 Kiaan Veterinary SaaS Platform. All rights reserved.
+              </div>
+            </div>
+          `;
+
+          await emailService.sendEmail({
+            to: userEmail,
+            subject: `Payment Receipt #${razorpay_payment_id} - Kiaan Veterinary`,
+            text: `Thank you for your payment. Receipt ID: ${razorpay_payment_id}. Plan: ${planName}, Amount: ₹${amount}`,
+            html: receiptHtml
+          });
+        }
+      } catch (emailErr) {
+        console.error('Failed to send payment receipt email:', emailErr);
+      }
 
       res.status(200).json({
         status: 'success',

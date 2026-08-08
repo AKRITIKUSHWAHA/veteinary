@@ -64,8 +64,8 @@ export default function SuperAdminLayout({ setIsSuperAdmin }) {
               onError={(e) => { e.target.style.display = 'none'; }}
             />
             <div className="sa-brand-text">
-              <span className="sa-brand-title">VETCARE</span>
-              <span className="sa-brand-highlight">PRO</span>
+              <span className="sa-brand-title">VETERINARY</span>
+              <span className="sa-brand-highlight">MANAGEMENT</span>
             </div>
           </div>
         </div>
